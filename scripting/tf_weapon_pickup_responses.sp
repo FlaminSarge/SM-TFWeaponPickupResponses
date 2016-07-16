@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.1"
+#define PLUGIN_VERSION "0.1.2"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -63,9 +63,7 @@ public void OnWeaponEquipPost(int client, int weapon) {
 }
 
 /**
- * Called when a client presses +use_action_slot_item on the same frame an WeaponEquipPost
- * callback is fired.  Speaks a specific voice response depending on the perceived rarity of a
- * weapon.
+ * Called when a weapon not owned by the specified client is picked up.
  * 
  * Can't think of any other way to specifically detect weapon pickups that don't involve
  * lower-level hooks (via CTFPlayer::PickupWeaponFromOther or CTFPlayer::CanPickupDroppedWeapon)
