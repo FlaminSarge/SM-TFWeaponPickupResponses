@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.0.1"
+#define PLUGIN_VERSION "0.0.2"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -42,9 +42,6 @@ enum ItemGrade {
 
 bool g_bAttribsSupported;
 
-// Stores the most recent weapon picked up in one frame.
-int g_NewWeaponEquipped[MAXPLAYERS+1];
-
 public void OnPluginStart() {
 	for (int i = MaxClients; i > 0; --i) {
 		if (IsClientInGame(i)) {
@@ -54,30 +51,24 @@ public void OnPluginStart() {
 }
 
 public void OnClientPutInServer(int client) {
-	g_NewWeaponEquipped[client] = 0;
 	SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquipPost);
 }
 
 public void OnWeaponEquipPost(int client, int weapon) {
-	g_NewWeaponEquipped[client] = weapon;
-	RequestFrame(OnWeaponEquipPostFrame, client);
-}
-
-public void OnWeaponEquipPostFrame(int client) {
-	// we're just modifying an array, doesn't matter if the client d/c's beforehand
-	g_NewWeaponEquipped[client] = 0;
-}
-
-/**
- * Checks if the command called was +use_action_slot_item_server.  If a weapon was picked up
- * this frame, assume the player called the weapon pickup command.
- */
-public void OnClientCommandKeyValues_Post(int client, KeyValues kv) {
-	char command[128];
-	kv.GetSectionName(command, sizeof(command));
+	int weaponAccountID = GetEntProp(weapon, Prop_Send, "m_iAccountID");
 	
-	if (StrEqual(command, "+use_action_slot_item_server") && g_NewWeaponEquipped[client]) {
-		TF2_OnWeaponPickup(client, g_NewWeaponEquipped[client]);
+	/**
+	 * Stock weapons on a human player also use their SteamID.
+	 * The one problem is that bot-spawned weapons may have non-zero (positive) iAccountID
+	 * values.
+	 * 
+	 * Since bots can't pick up weapons, we'll just ignore that for now and fix it later.
+	 * 
+	 * There's also the rare case where a player with a low account ID joins and a bot's
+	 * using the same accountid.  TODO fix?
+	 */ 
+	if (!IsFakeClient(client) && GetSteamAccountID(client) != weaponAccountID) {
+		TF2_OnWeaponPickup(client, weapon);
 	}
 }
 
