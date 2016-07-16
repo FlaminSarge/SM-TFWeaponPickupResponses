@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.1.1"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -28,16 +28,6 @@ enum WeaponRarity {
 	Weapon_Common = 0,
 	Weapon_Rare,
 	Weapon_UltraRare
-};
-
-enum ItemGrade {
-	Grade_None = -1,
-	Grade_Civilian = 0,
-	Grade_Freelance,
-	Grade_Mercenary,
-	Grade_Commando,
-	Grade_Assassin,
-	Grade_Elite
 };
 
 bool g_bAttribsSupported;
