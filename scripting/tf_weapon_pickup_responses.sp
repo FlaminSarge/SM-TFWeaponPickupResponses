@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.0.2"
+#define PLUGIN_VERSION "0.1.0"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -103,55 +103,75 @@ void TF2_OnWeaponPickup(int client, int weapon) {
 #define QUALITY_UNUSUAL 5
 
 /**
- * Determines the perceived "rarity" of a weapon.
- */
-WeaponRarity GetWeaponPerceivedRarity(int weapon) {
-	int iEntityQuality = GetEntProp(weapon, Prop_Send, "m_iEntityQuality");
-	
-	ItemGrade weaponGrade = TF2_GetWeaponItemGrade(weapon);
-	
-	// unusual quality, elite grade, or australium?  rare as fuck
-	if (iEntityQuality == QUALITY_UNUSUAL || weaponGrade == Grade_Elite
-			|| TF2_IsWeaponAustralium(weapon)) {
-		return Weapon_UltraRare;
-	} else if (weaponGrade == Grade_Assassin) {
-		return Weapon_Rare;
-	}
-	
-	// just a standard weapon pickup
-	return Weapon_Common;
-}
-
-/**
  * Unfortunately, there's no builtin way to figure out what grade a specific item is.
  * 
  * I don't want to force people to choose a TF2 item support library so for now I'll just use a
  * lookup table for the sake of laziness.
+ * 
+ * We stop iterating through the array once the value read is 0.
  */
-int g_ItemGradeLookup[][] = {
-	{ /* we don't care for civilian */ },
-	{ /* or for freelance */ },
-	{ /* or for mercenary */ },
-	{ /* ooooor for commando */ },
-	{ 15009, 15011, 15007, 15052, 15053, 15048, 20668, 30666, 15089, 15111, 15113, 15092, 15141,
-		15142, 15152 },
-	{ 15013, 15014, 15059, 15045, 20667, 15090, 15091, 15112, 15141, 15151 },
+int g_ItemRarityLookup[][] = {
+	{	/* Common loot */
+		/* basically everything not in this list, so we don't really care */
+		0
+	},
+	
+	{	/* Rare loot */
+	
+		/* Assassin-grade weapons */
+		15009, 15011, 15007, /* Concealed Killer Collection */
+		15052, 15053, 15048, /* Powerhouse Collection */
+		15089, 15111, 15113, 15092, /* Pyroland Collection */
+		15141, 15142, 15152, /* Warbird Collection */
+		
+		30666, // C.A.P.P.E.R
+		30668, // Giger Counter
+		
+		0
+	},
+	
+	{	/* Ultra-rare loot */
+		
+		/* Elite-grade weapons */
+		15013, 15014, /* Concealed Killer Collection */
+		15059, 15045, /* Powerhouse Collection */
+		15090, 15091, 15112, /* Pyroland Collection */
+		15141, 15151, /* Warbird Collection */
+		
+		30667, // Batsaber
+		169, // Golden Wrench
+		423, // Saxxy
+		
+		0
+	},
 };
 
-int g_ItemGradeTableLengths[] = {
-	0, 0, 0, 0, 15, 10
-};
-
-ItemGrade TF2_GetWeaponItemGrade(int weapon) {
+/**
+ * Determines the perceived "rarity" of a weapon.
+ */
+WeaponRarity GetWeaponPerceivedRarity(int weapon) {
+	int iEntityQuality = GetEntProp(weapon, Prop_Send, "m_iEntityQuality");
 	int iDefIndex = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-	for (int g = 0; g < view_as<int>(ItemGrade); g++) {
-		for (int d = 0; d < g_ItemGradeTableLengths[g]; d++) {
-			if (iDefIndex == g_ItemGradeLookup[g][d]) {
-				return view_as<ItemGrade>(g);
-			}
+	
+	// unusual quality or australium?  rare as fuck
+	if (iEntityQuality == QUALITY_UNUSUAL || TF2_IsWeaponAustralium(weapon)) {
+		return Weapon_UltraRare;
+	} else if (iDefIndex) {
+		// look up the rarity by defindex
+		for (int r = 0; r < view_as<int>(WeaponRarity); r++) {
+			int i;
+			do {
+				int lookup = g_ItemRarityLookup[r][i];
+				
+				if (lookup == iDefIndex) {
+					return view_as<WeaponRarity>(r);
+				}
+			} while (g_ItemRarityLookup[r][++i] != 0);
 		}
 	}
-	return Grade_None;
+	
+	// just a standard weapon pickup
+	return Weapon_Common;
 }
 
 bool TF2_IsWeaponAustralium(int weapon) {
