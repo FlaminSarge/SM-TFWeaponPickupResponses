@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.2"
+#define PLUGIN_VERSION "0.1.3"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -45,6 +45,10 @@ public void OnClientPutInServer(int client) {
 }
 
 public void OnWeaponEquipPost(int client, int weapon) {
+	if (IsFakeClient(client)) {
+		SetEntProp(weapon, Prop_Send, "m_iAccountID", 0);
+	}
+	
 	int weaponAccountID = GetEntProp(weapon, Prop_Send, "m_iAccountID");
 	
 	/**
@@ -56,7 +60,7 @@ public void OnWeaponEquipPost(int client, int weapon) {
 	 * 
 	 * There's also the rare case where a player with a low account ID joins and a bot's
 	 * using the same accountid.  TODO fix?
-	 */ 
+	 */
 	if (!IsFakeClient(client) && GetSteamAccountID(client) != weaponAccountID) {
 		TF2_OnWeaponPickup(client, weapon);
 	}
@@ -96,12 +100,12 @@ void TF2_OnWeaponPickup(int client, int weapon) {
  * I don't want to force people to choose a TF2 item support library so for now I'll just use a
  * lookup table for the sake of laziness.
  * 
- * We stop iterating through the array once the value read is 0.
+ * We stop iterating through the array once the value read is -1.
  */
 int g_ItemRarityLookup[][] = {
 	{	/* Common loot */
 		/* basically everything not in this list, so we don't really care */
-		0
+		-1
 	},
 	
 	{	/* Rare loot */
@@ -115,7 +119,7 @@ int g_ItemRarityLookup[][] = {
 		30666, // C.A.P.P.E.R
 		30668, // Giger Counter
 		
-		0
+		-1
 	},
 	
 	{	/* Ultra-rare loot */
@@ -130,7 +134,7 @@ int g_ItemRarityLookup[][] = {
 		169, // Golden Wrench
 		423, // Saxxy
 		
-		0
+		-1
 	},
 };
 
@@ -154,7 +158,7 @@ WeaponRarity GetWeaponPerceivedRarity(int weapon) {
 				if (lookup == iDefIndex) {
 					return view_as<WeaponRarity>(r);
 				}
-			} while (g_ItemRarityLookup[r][++i] != 0);
+			} while (g_ItemRarityLookup[r][++i] != -1);
 		}
 	}
 	
