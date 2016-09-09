@@ -10,12 +10,12 @@
 #include <sdktools>
 
 #undef REQUIRE_PLUGIN
-#include <tf2attributes>
+#tryinclude <tf2attributes>
 #define REQUIRE_PLUGIN
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.3"
+#define PLUGIN_VERSION "0.1.4"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -38,6 +38,10 @@ public void OnPluginStart() {
 			OnClientPutInServer(i);
 		}
 	}
+	
+	#if !defined _tf2attributes_included
+		LogMessage("Plugin was not compiled with TF2Attributes support.");
+	#endif
 }
 
 public void OnClientPutInServer(int client) {
@@ -167,12 +171,15 @@ WeaponRarity GetWeaponPerceivedRarity(int weapon) {
 }
 
 bool TF2_IsWeaponAustralium(int weapon) {
-	if (g_bAttribsSupported) {
-		Address pAttrib;
-		if ((pAttrib = TF2Attrib_GetByName(weapon, "is australium item")) != Address_Null) {
-			return TF2Attrib_GetValue(pAttrib) != 0;
+	// If TF2Attributes doesn't exist, that's too bad.
+	#if defined _tf2attributes_included
+		if (g_bAttribsSupported) {
+			Address pAttrib;
+			if ((pAttrib = TF2Attrib_GetByName(weapon, "is australium item")) != Address_Null) {
+				return TF2Attrib_GetValue(pAttrib) != 0;
+			}
 		}
-	}
+	#endif
 	return false;
 }
 
