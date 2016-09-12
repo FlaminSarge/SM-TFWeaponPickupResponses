@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.4"
+#define PLUGIN_VERSION "0.1.5"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -152,7 +152,7 @@ WeaponRarity GetWeaponPerceivedRarity(int weapon) {
 	// unusual quality or australium?  rare as fuck
 	if (iEntityQuality == QUALITY_UNUSUAL || TF2_IsWeaponAustralium(weapon)) {
 		return Weapon_UltraRare;
-	} else if (iDefIndex) {
+	} else {
 		// look up the rarity by defindex
 		for (int r = 0; r < view_as<int>(WeaponRarity); r++) {
 			int i;
