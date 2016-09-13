@@ -15,7 +15,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.5"
+#define PLUGIN_VERSION "0.1.6"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -174,10 +174,8 @@ bool TF2_IsWeaponAustralium(int weapon) {
 	// If TF2Attributes doesn't exist, that's too bad.
 	#if defined _tf2attributes_included
 		if (g_bAttribsSupported) {
-			Address pAttrib;
-			if ((pAttrib = TF2Attrib_GetByName(weapon, "is australium item")) != Address_Null) {
-				return TF2Attrib_GetValue(pAttrib) != 0;
-			}
+			// you can tell it's Australium because of the way it is
+			return (TF2Attrib_GetByName(weapon, "is australium item") != Address_Null);
 		}
 	#endif
 	return false;
