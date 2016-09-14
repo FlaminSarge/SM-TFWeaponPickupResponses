@@ -2,6 +2,8 @@
  * [TF2] Weapon Pickup Responses
  * 
  * Players use their MvM loot responses when picking up rare weapons.
+ * 
+ * Thanks to Tomato and FlaminSarge for notifying and fixing some issue with Australiums!
  */
 #pragma semicolon 1
 #include <sourcemod>
@@ -15,7 +17,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.6"
+#define PLUGIN_VERSION "0.1.7"
 public Plugin myinfo = {
     name = "[TF2] Weapon Pickup Responses",
     author = "nosoop",
@@ -175,7 +177,21 @@ bool TF2_IsWeaponAustralium(int weapon) {
 	#if defined _tf2attributes_included
 		if (g_bAttribsSupported) {
 			// you can tell it's Australium because of the way it is
-			return (TF2Attrib_GetByName(weapon, "is australium item") != Address_Null);
+			if (TF2Attrib_GetByName(weapon, "is australium item") != Address_Null) {
+				return true;
+			} else {
+				// item server-specific value? uhhhhhh
+				int iAttribIndices[16];
+				float flAttribValues[16];
+				
+				int nAttribs = TF2Attrib_GetSOCAttribs(weapon, iAttribIndices, flAttribValues);
+				
+				for (int i = 0; i < nAttribs; i++) {
+					if (iAttribIndices[i] == 2027) {
+						return true;
+					}
+				}
+			}
 		}
 	#endif
 	return false;
