@@ -51,9 +51,10 @@ public void OnClientPutInServer(int client) {
 }
 
 public void OnWeaponEquipPost(int client, int weapon) {
-	if (IsFakeClient(client)) {
-		SetEntProp(weapon, Prop_Send, "m_iAccountID", 0);
-	}
+//This breaks first bot weapon equip, so don't do it
+//	if (IsFakeClient(client)) {
+//		SetEntProp(weapon, Prop_Send, "m_iAccountID", 0);
+//	}
 	
 	int weaponAccountID = GetEntProp(weapon, Prop_Send, "m_iAccountID");
 	
